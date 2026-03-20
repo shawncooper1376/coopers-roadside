@@ -22,50 +22,50 @@ export default function RoadsideAssistanceWebsite() {
   const mapboxToken = "";
 
   const services = [
-    { title: "Jump Starts", desc: "Fast battery jump start service to get you moving again. ($50–$70 | After Hours $70–$90)" },
-    { title: "Tire Changes", desc: "Safe roadside tire changes when you have a flat. ($60–$80 | After Hours $80–$100)" },
-    { title: "Lockouts", desc: "Quick vehicle lockout assistance when your keys are inside. ($70–$100 | After Hours $90–$120)" },
-    { title: "Gas Delivery", desc: "Fuel delivery to stranded drivers who run out of gas. ($60–$90 + fuel | After Hours $80–$110)" },
-    { title: "Battery Changes", desc: "On-site battery replacement service to get your vehicle started again. ($80–$120+ + cost of battery | After Hours $100–$150+ + battery)" },
-    { title: "Battery Testing", desc: "On-site battery testing to diagnose weak or dead batteries before replacement. ($20–$40)" },
+    { title: "Jump Starts", desc: "Fast battery jump start service to get you moving again. ($42–$58 | After Hours $58–$75)" },
+    { title: "Tire Changes", desc: "Safe roadside tire changes when you have a flat. ($50–$66 | After Hours $66–$83)" },
+    { title: "Lockouts", desc: "Quick vehicle lockout assistance when your keys are inside. ($58–$83 | After Hours $75–$100)" },
+    { title: "Gas Delivery", desc: "Fuel delivery to stranded drivers who run out of gas. ($50–$75 + fuel | After Hours $66–$91)" },
+    { title: "Battery Changes", desc: "On-site battery replacement service to get your vehicle started again. ($66–$100 + cost of battery | After Hours $83–$125 + battery)" },
+    { title: "Battery Testing", desc: "On-site battery testing to diagnose weak or dead batteries before replacement. ($17–$33)" },
     { title: "Tire Plug Repair", desc: "Quick tire plug repair for punctures to get you back on the road. ($25–$50 + distance | After Hours $50–$70 + distance)" },
-    { title: "Lug Nut Lock Removal", desc: "Professional removal of damaged or locked lug nuts and wheel locks. Includes replacement lug nut. ($80–$120+ | After Hours $100–$150+)" },
+    { title: "Lug Nut Lock Removal", desc: "Professional removal of damaged or locked lug nuts and wheel locks. Includes replacement lug nut. ($66–$100 | After Hours $83–$125)" },
   ];
 
   const bundles = [
     {
       title: "Recommended Safety Bundle",
-      price: "$35–$55",
-      desc: "Includes battery testing, tire pressure check, and a quick roadside safety check.",
+      price: "$29–$46",
+      desc: "Includes battery testing, tire pressure check, and a quick roadside safety inspection.",
       badge: "Recommended",
     },
     {
       title: "Emergency Priority Bundle",
-      price: "$60–$95",
+      price: "$50–$79",
       desc: "Priority response plus battery and tire safety check for drivers who need faster service.",
       emergency: true,
     },
     {
       title: "Battery Care Bundle",
-      price: "$50–$95",
-      desc: "Battery testing plus on-site battery installation if replacement is needed.",
+      price: "$42–$79",
+      desc: "Battery testing with on-site battery installation if replacement is needed.",
     },
   ];
 
   const isAfterHours = true;
 
   const serviceBasePrices: Record<string, number> = {
-    "Jump Starts": 60,
-    "Tire Changes": 70,
-    "Lockouts": 85,
-    "Gas Delivery": 75,
-    "Battery Changes": 100,
-    "Battery Testing": 30,
+    "Jump Starts": 50,
+    "Tire Changes": 58,
+    "Lockouts": 70,
+    "Gas Delivery": 60,
+    "Battery Changes": 80,
+    "Battery Testing": 25,
     "Tire Plug Repair": 35,
-    "Lug Nut Lock Removal": 100,
-    "Recommended Safety Bundle": 45,
-    "Emergency Priority Bundle": 80,
-    "Battery Care Bundle": 70,
+    "Lug Nut Lock Removal": 80,
+    "Recommended Safety Bundle": 35,
+    "Emergency Priority Bundle": 60,
+    "Battery Care Bundle": 50,
   };
 
   const handlePayClick = () => {
@@ -239,17 +239,30 @@ export default function RoadsideAssistanceWebsite() {
   const basePrice = selectedService ? serviceBasePrices[selectedService] ?? 0 : 0;
   const extraMiles = Math.max(0, numericDistance - 10);
   const mileageCharge = extraMiles * 3;
-  const phillyFee = customerAddress.toLowerCase().includes("philadelphia") || customerAddress.toLowerCase().includes("philly") ? 25 : 0;
+  const phillyDiscount =
+    customerAddress.toLowerCase().includes("philadelphia") || customerAddress.toLowerCase().includes("philly")
+      ? 25
+      : 0;
   const needsCustomQuote = numericDistance >= 30;
-  const estimatedTotal = needsCustomQuote ? null : basePrice + mileageCharge + phillyFee;
+  const estimatedTotal = needsCustomQuote ? null : Math.max(basePrice + mileageCharge - phillyDiscount, 0);
 
   const selectedText = selectedService
-    ? encodeURIComponent(`Hey Coop, I need ${selectedService} at ${customerAddress || "my location"}. Distance is about ${distanceMiles || "unknown"} miles. Estimated total is ${estimatedTotal !== null ? `$${estimatedTotal}` : "custom quote required"}.`)
+    ? encodeURIComponent(
+        `Hey Coop, I need ${selectedService} at ${customerAddress || "my location"}. Distance is about ${
+          distanceMiles || "unknown"
+        } miles. Estimated total is ${estimatedTotal !== null ? `$${estimatedTotal}` : "custom quote required"}.`
+      )
     : encodeURIComponent(`Hey Coop I need roadside assistance at ${customerAddress || "my location"}.`);
 
   const isIPhone = /iPhone|iPad|iPod/i.test(navigator.userAgent);
   const dispatchText = encodeURIComponent(
-    `New job request:%0AService: ${selectedService || "Not selected"}%0ALocation: ${customerAddress || "Not provided"}%0ARoute miles: ${routeMiles ? routeMiles.toFixed(1) : distanceMiles || "Not calculated"}%0ATravel add-on: $${(mileageCharge + phillyFee).toFixed(0)}%0ABase price: $${basePrice}%0ATotal: ${estimatedTotal !== null ? `$${estimatedTotal}` : "Custom quote required"}`
+    `New job request:%0AService: ${selectedService || "Not selected"}%0ALocation: ${
+      customerAddress || "Not provided"
+    }%0ARoute miles: ${routeMiles ? routeMiles.toFixed(1) : distanceMiles || "Not calculated"}%0ATravel add-on: $${mileageCharge.toFixed(
+      0
+    )}%0APhiladelphia discount: -$${phillyDiscount}%0ABase price: $${basePrice}%0ATotal: ${
+      estimatedTotal !== null ? `$${estimatedTotal}` : "Custom quote required"
+    }`
   );
   const mapQuery = encodeURIComponent(customerAddress || "Dropped Pin");
   const deviceMapLink = isIPhone
@@ -259,22 +272,36 @@ export default function RoadsideAssistanceWebsite() {
   return (
     <div className="min-h-screen bg-slate-950 pb-24 text-white">
       <div className="bg-red-600 py-2 text-center text-sm font-medium">
-        {isAfterHours ? "Serving Camden right now — after-hours emergency service available" : "Serving Camden & surrounding areas — request service now"}
+        {isAfterHours
+          ? "Serving Camden County right now — after-hours emergency service available"
+          : "Serving Camden County and surrounding areas — request service now"}
       </div>
 
       <header className="sticky top-0 z-40 flex items-center justify-between border-b border-white/10 bg-slate-950 px-6 py-4 backdrop-blur">
         <h1 className="text-xl font-bold tracking-wide">CoopersRoadside LLC</h1>
         <div className="hidden items-center gap-3 md:flex">
           <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300">
-            Serving Camden right now
+            Serving Camden County right now
           </span>
-          <a href="tel:+16094503402" className="rounded-xl bg-blue-500 px-4 py-2 font-semibold">Call Coop</a>
+          <a href="tel:+16094503402" className="rounded-xl bg-blue-500 px-4 py-2 font-semibold">
+            Call Coop
+          </a>
         </div>
       </header>
 
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-center bg-cover opacity-35" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1609521263047-f8f205293f24?q=80&w=2070&auto=format&fit=crop')" }} />
-        <div className={`absolute inset-0 ${isAfterHours ? "bg-gradient-to-b from-black/85 via-black/75 to-black/95" : "bg-gradient-to-b from-black/70 via-black/60 to-black/80"}`} />
+        <div
+          className="absolute inset-0 bg-center bg-cover opacity-35"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1609521263047-f8f205293f24?q=80&w=2070&auto=format&fit=crop')",
+          }}
+        />
+        <div
+          className={`absolute inset-0 ${
+            isAfterHours ? "bg-gradient-to-b from-black/85 via-black/75 to-black/95" : "bg-gradient-to-b from-black/70 via-black/60 to-black/80"
+          }`}
+        />
 
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute -left-10 top-10 h-40 w-40 rounded-full bg-amber-400/20 blur-2xl animate-pulse" />
@@ -291,61 +318,136 @@ export default function RoadsideAssistanceWebsite() {
               <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
               After Hours Emergency
             </span>
-            <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-slate-200">Camden area priority service</span>
-            <span className="rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300">100% Transparent Pricing — no hidden fees</span>
-            <span className="rounded-full border border-cyan-400/40 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-300">Privacy-first ETA tracking</span>
+            <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-slate-200">
+              Camden County priority service
+            </span>
+            <span className="rounded-full border border-emerald-400/40 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300">
+              100% Transparent Pricing — no hidden fees
+            </span>
+            <span className="rounded-full border border-cyan-400/40 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-300">
+              Privacy-first ETA tracking
+            </span>
           </div>
 
           <h2 className="mt-4 text-4xl font-bold md:text-6xl">Fast roadside help when drivers need it most</h2>
           <p className="mt-2 text-sm text-blue-400">After Hours Pricing: 8PM – 6AM</p>
-          <p className="mt-6 max-w-3xl text-lg text-slate-300">Jump starts, tire changes, lockouts, gas delivery, battery changes, battery testing, tire plug repair and lug nut lock removal.</p>
+          <p className="mt-6 max-w-3xl text-lg text-slate-300">
+            Jump starts, tire changes, lockouts, gas delivery, battery changes, battery testing, tire plug repair and lug nut lock removal.
+          </p>
           <p className="mt-3 text-lg font-semibold text-emerald-300">If I can park a Jeep there, I can service it.</p>
+          <p className="mt-3 text-lg font-semibold text-yellow-300">Philadelphia, PA customers get a $25 discount</p>
 
           <div className="mt-8 max-w-3xl rounded-2xl border border-white/10 bg-black/30 p-4 md:p-5">
             <p className="text-sm font-semibold text-slate-200">Choose your service first</p>
             <div className="mt-3 space-y-3">
-              <select value={selectedService} onChange={(e) => setSelectedService(e.target.value)} className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white">
+              <select
+                value={selectedService}
+                onChange={(e) => setSelectedService(e.target.value)}
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white"
+              >
                 <option value="">Select a service</option>
-                {serviceOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                {serviceOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
               </select>
 
               <div className="grid gap-3 md:grid-cols-2">
-                <input value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} placeholder="Customer city or address" className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white" />
-                <input value={distanceMiles} onChange={(e) => setDistanceMiles(e.target.value.replace(/[^0-9.]/g, ""))} placeholder="Estimated miles" className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white" />
+                <input
+                  value={customerAddress}
+                  onChange={(e) => setCustomerAddress(e.target.value)}
+                  placeholder="Customer city or address"
+                  className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white"
+                />
+                <input
+                  value={distanceMiles}
+                  onChange={(e) => setDistanceMiles(e.target.value.replace(/[^0-9.]/g, ""))}
+                  placeholder="Estimated miles"
+                  className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white"
+                />
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <button onClick={calculateRouteMileage} disabled={calculatingRoute} className="rounded-xl bg-cyan-500 px-6 py-3 font-semibold text-black disabled:opacity-60">
+                <button
+                  onClick={calculateRouteMileage}
+                  disabled={calculatingRoute}
+                  className="rounded-xl bg-cyan-500 px-6 py-3 font-semibold text-black disabled:opacity-60"
+                >
                   {calculatingRoute ? "Calculating Route…" : "Get Live Route Mileage"}
                 </button>
                 <div className="rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-sm text-slate-300">{routeStatus}</div>
               </div>
 
               <div className="grid gap-3 md:grid-cols-3">
-                <a href={`sms:+16094503402?body=${selectedText}`} className="rounded-xl bg-blue-500 px-6 py-3 text-center font-semibold">Call / Text Coop</a>
-                <a href={deviceMapLink} target="_blank" rel="noreferrer" className="rounded-xl border border-white/20 px-6 py-3 text-center font-semibold">Drop a Pin</a>
-                <a href={`sms:+16094503402?body=${dispatchText}`} className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-6 py-3 text-center font-semibold text-emerald-300">Send Job Details</a>
+                <a
+                  href={`sms:+16094503402?body=${selectedText}`}
+                  className="rounded-xl bg-blue-500 px-6 py-3 text-center font-semibold"
+                >
+                  Call / Text Coop
+                </a>
+                <a
+                  href={deviceMapLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-xl border border-white/20 px-6 py-3 text-center font-semibold"
+                >
+                  Drop a Pin
+                </a>
+                <a
+                  href={`sms:+16094503402?body=${dispatchText}`}
+                  className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-6 py-3 text-center font-semibold text-emerald-300"
+                >
+                  Send Job Details
+                </a>
               </div>
 
               {(distanceMiles || customerAddress) && (
                 <div className="rounded-2xl border border-white/10 bg-slate-950/80 p-4 text-sm text-slate-300">
                   <div className="grid gap-2 md:grid-cols-2">
-                    <p><span className="font-semibold text-white">Included miles:</span> First 10 miles</p>
-                    <p><span className="font-semibold text-white">Base price:</span> ${basePrice || serviceBasePrice || 0}</p>
-                    <p><span className="font-semibold text-white">Mileage charge:</span> ${mileageCharge.toFixed(0)}</p>
-                    <p><span className="font-semibold text-white">Philadelphia fee:</span> ${phillyFee}</p>
-                    <p><span className="font-semibold text-white">Service range:</span> 30+ miles = custom quote</p>
-                    <p><span className="font-semibold text-white">Route miles:</span> {routeMiles ? routeMiles.toFixed(1) : "Not calculated yet"}</p>
-                    <p><span className="font-semibold text-white">Pricing source:</span> {routeMiles ? "Live map route" : "Manual estimate"}</p>
-                    <p><span className="font-semibold text-white">Estimated total:</span> {estimatedTotal !== null ? `$${estimatedTotal}` : "Custom quote required"}</p>
+                    <p>
+                      <span className="font-semibold text-white">Included miles:</span> First 10 miles
+                    </p>
+                    <p>
+                      <span className="font-semibold text-white">Base price:</span> ${basePrice || serviceBasePrice || 0}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-white">Mileage charge:</span> ${mileageCharge.toFixed(0)}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-white">Philadelphia discount:</span> -${phillyDiscount}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-white">Service range:</span> 30+ miles = custom quote
+                    </p>
+                    <p>
+                      <span className="font-semibold text-white">Route miles:</span> {routeMiles ? routeMiles.toFixed(1) : "Not calculated yet"}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-white">Pricing source:</span> {routeMiles ? "Live map route" : "Manual estimate"}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-white">Estimated total:</span>{" "}
+                      {estimatedTotal !== null ? `$${estimatedTotal}` : "Custom quote required"}
+                    </p>
                   </div>
-                  <p className="mt-3 text-cyan-300">{needsCustomQuote ? "This trip needs a custom quote before dispatch." : `Estimated travel add-on: $${(mileageCharge + phillyFee).toFixed(0)}`}</p>
+                  <p className="mt-3 text-cyan-300">
+                    {needsCustomQuote ? "This trip needs a custom quote before dispatch." : `Estimated travel add-on: $${mileageCharge.toFixed(0)}`}
+                  </p>
                 </div>
               )}
 
               {selectedService && (
                 <div className="flex flex-wrap gap-3">
-                  <a href={squareCheckoutUrl} target="_blank" rel="noreferrer" onClick={handlePayClick} className="rounded-xl bg-emerald-500 px-6 py-3 font-semibold text-black">Pay Now for {selectedService}</a>
+                  <a
+                    href={squareCheckoutUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={handlePayClick}
+                    className="rounded-xl bg-emerald-500 px-6 py-3 font-semibold text-black"
+                  >
+                    Pay Now for {selectedService}
+                  </a>
                 </div>
               )}
             </div>
@@ -355,9 +457,14 @@ export default function RoadsideAssistanceWebsite() {
 
       <section className="border-y border-white/10 bg-white/5">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-4 text-sm md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-2 text-slate-200"><span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />Serving Camden right now</div>
-          <div className="flex items-center gap-2 text-slate-300"><span className="h-2 w-2 rounded-full bg-amber-300 animate-pulse" />Limited after-hours availability tonight</div>
-          <div className="rounded-full bg-white px-3 py-1 text-black shadow-lg animate-pulse">Someone just booked roadside help 🔥</div>
+          <div className="flex items-center gap-2 text-slate-200">
+            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            Serving Camden County right now
+          </div>
+          <div className="flex items-center gap-2 text-slate-300">
+            <span className="h-2 w-2 rounded-full bg-amber-300 animate-pulse" />
+            Limited after-hours availability tonight
+          </div>
         </div>
       </section>
 
@@ -371,34 +478,66 @@ export default function RoadsideAssistanceWebsite() {
               </div>
               <span className="rounded-full bg-cyan-500 px-3 py-1 text-xs font-semibold text-black">{etaMinutes} min ETA</span>
             </div>
-            <p className="mt-3 text-slate-300">Live location is intentionally approximate for safety and privacy. The displayed service position starts about 5 miles off, then tightens closer as ETA drops.</p>
+            <p className="mt-3 text-slate-300">
+              Live location is intentionally approximate for safety and privacy. The displayed service position starts about 5 miles off, then tightens closer as ETA drops.
+            </p>
             <div className="mt-5 flex flex-wrap gap-3">
               {!sharingLocation ? (
-                <button onClick={startLocationSharing} className="rounded-xl bg-cyan-500 px-4 py-3 font-semibold text-black">Share Live ETA</button>
+                <button onClick={startLocationSharing} className="rounded-xl bg-cyan-500 px-4 py-3 font-semibold text-black">
+                  Share Live ETA
+                </button>
               ) : (
-                <button onClick={stopLocationSharing} className="rounded-xl border border-white/20 px-4 py-3 font-semibold">Pause Sharing</button>
+                <button onClick={stopLocationSharing} className="rounded-xl border border-white/20 px-4 py-3 font-semibold">
+                  Pause Sharing
+                </button>
               )}
               <div className="rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-sm text-slate-300">{locationStatus}</div>
             </div>
             <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950 p-4">
               <div className="relative h-56 overflow-hidden rounded-xl bg-gradient-to-br from-slate-800 via-slate-900 to-black">
-                <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "radial-gradient(circle at center, rgba(255,255,255,0.14) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+                <div
+                  className="absolute inset-0 opacity-30"
+                  style={{
+                    backgroundImage: "radial-gradient(circle at center, rgba(255,255,255,0.14) 1px, transparent 1px)",
+                    backgroundSize: "24px 24px",
+                  }}
+                />
                 <div className="absolute left-[18%] top-[30%] h-16 w-16 rounded-full bg-cyan-400/10 blur-2xl" />
                 <div className="absolute left-[58%] top-[52%] h-20 w-20 rounded-full bg-emerald-400/10 blur-2xl" />
                 <div
                   className="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-1000"
                   style={{
-                    left: displayPosition ? `${Math.min(82, Math.max(18, 50 + ((displayPosition.lng - (livePosition?.lng ?? displayPosition.lng)) * 900)))}%` : mapStage === 0 ? "38%" : mapStage === 1 ? "43%" : mapStage === 2 ? "46%" : "48%",
-                    top: displayPosition ? `${Math.min(78, Math.max(20, 46 - ((displayPosition.lat - (livePosition?.lat ?? displayPosition.lat)) * 900)))}%` : "42%",
+                    left: displayPosition
+                      ? `${Math.min(82, Math.max(18, 50 + (displayPosition.lng - (livePosition?.lng ?? displayPosition.lng)) * 900))}%`
+                      : mapStage === 0
+                      ? "38%"
+                      : mapStage === 1
+                      ? "43%"
+                      : mapStage === 2
+                      ? "46%"
+                      : "48%",
+                    top: displayPosition
+                      ? `${Math.min(78, Math.max(20, 46 - (displayPosition.lat - (livePosition?.lat ?? displayPosition.lat)) * 900))}%`
+                      : "42%",
                   }}
                 >
                   <div className="relative flex items-center justify-center">
-                    <div className={`absolute rounded-full border border-cyan-300/40 transition-all duration-1000 ${mapStage === 0 ? "h-24 w-24" : mapStage === 1 ? "h-16 w-16" : mapStage === 2 ? "h-10 w-10" : "h-7 w-7"}`} />
-                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.8)] animate-pulse"><div className="h-2 w-2 rounded-full bg-black" /></div>
+                    <div
+                      className={`absolute rounded-full border border-cyan-300/40 transition-all duration-1000 ${
+                        mapStage === 0 ? "h-24 w-24" : mapStage === 1 ? "h-16 w-16" : mapStage === 2 ? "h-10 w-10" : "h-7 w-7"
+                      }`}
+                    />
+                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.8)] animate-pulse">
+                      <div className="h-2 w-2 rounded-full bg-black" />
+                    </div>
                   </div>
                 </div>
-                <div className="absolute bottom-3 left-3 rounded-full bg-black/70 px-3 py-1 text-xs text-slate-200">Approximate service area only • privacy radius {privacyRadiusMiles} mi</div>
-                <div className="absolute bottom-3 right-3 rounded-full bg-black/70 px-3 py-1 text-xs text-slate-200">Approx coords: {formatApproxCoords(displayPosition)}</div>
+                <div className="absolute bottom-3 left-3 rounded-full bg-black/70 px-3 py-1 text-xs text-slate-200">
+                  Approximate service area only • privacy radius {privacyRadiusMiles} mi
+                </div>
+                <div className="absolute bottom-3 right-3 rounded-full bg-black/70 px-3 py-1 text-xs text-slate-200">
+                  Approx coords: {formatApproxCoords(displayPosition)}
+                </div>
               </div>
             </div>
           </div>
@@ -424,7 +563,7 @@ export default function RoadsideAssistanceWebsite() {
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           <div className="rounded-2xl border border-white/10 bg-slate-900 p-6">
             <h3 className="text-xl font-semibold">Local Coverage</h3>
-            <p className="mt-2 text-slate-300">Serving Mercer County NJ and nearby areas first.</p>
+            <p className="mt-2 text-slate-300">Now servicing Camden County and surrounding areas.</p>
             <p className="mt-3 font-semibold text-green-400">First 10 miles included in base price</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-slate-900 p-6">
@@ -434,8 +573,8 @@ export default function RoadsideAssistanceWebsite() {
           </div>
           <div className="rounded-2xl border border-white/10 bg-slate-900 p-6">
             <h3 className="text-xl font-semibold">Philadelphia Service</h3>
-            <p className="mt-2 text-slate-300">Serving Philadelphia with priority roadside assistance.</p>
-            <p className="mt-3 font-semibold text-red-400">+$25 city service fee</p>
+            <p className="mt-2 text-slate-300">Philadelphia, PA customers get a $25 discount.</p>
+            <p className="mt-3 font-semibold text-emerald-400">-$25 Philadelphia discount</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-slate-900 p-6">
             <h3 className="text-xl font-semibold">Long Distance Calls</h3>
@@ -458,10 +597,16 @@ export default function RoadsideAssistanceWebsite() {
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-10">
-        <h2 className="mb-6 text-3xl font-bold">Recommended Packages</h2>
+        <h2 className="mb-2 text-3xl font-bold">Recommended Packages</h2>
+        <p className="mb-6 text-slate-300">Save money with bundled roadside services</p>
         <div className="grid gap-6 md:grid-cols-3">
           {bundles.map((bundle) => (
-            <div key={bundle.title} className={`rounded-2xl border p-6 ${bundle.badge ? "border-blue-400 bg-blue-500/10" : bundle.emergency ? "border-red-400 bg-red-500/10" : "border-white/10 bg-slate-900"}`}>
+            <div
+              key={bundle.title}
+              className={`rounded-2xl border p-6 ${
+                bundle.badge ? "border-blue-400 bg-blue-500/10" : bundle.emergency ? "border-red-400 bg-red-500/10" : "border-white/10 bg-slate-900"
+              }`}
+            >
               <div className="flex items-center justify-between gap-3">
                 <h3 className="text-xl font-semibold">{bundle.title}</h3>
                 <div className="flex gap-2">
@@ -486,8 +631,21 @@ export default function RoadsideAssistanceWebsite() {
               <p className="mt-3 text-sm">Tips are always appreciated for fast response, after-hours service, and emergency roadside help.</p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <a href={squareCheckoutUrl} target="_blank" rel="noreferrer" onClick={handlePayClick} className="rounded-xl bg-black px-6 py-3 font-semibold text-white">Pay Now with Square</a>
-              <a href="sms:+16094503402?body=Hey%20Coop%2C%20I%E2%80%99m%20ready%20to%20pay%20for%20roadside%20service" className="rounded-xl border border-black/20 px-6 py-3 font-semibold">Text for Invoice</a>
+              <a
+                href={squareCheckoutUrl}
+                target="_blank"
+                rel="noreferrer"
+                onClick={handlePayClick}
+                className="rounded-xl bg-black px-6 py-3 font-semibold text-white"
+              >
+                Pay Now with Square
+              </a>
+              <a
+                href="sms:+16094503402?body=Hey%20Coop%2C%20I%E2%80%99m%20ready%20to%20pay%20for%20roadside%20service"
+                className="rounded-xl border border-black/20 px-6 py-3 font-semibold"
+              >
+                Text for Invoice
+              </a>
             </div>
           </div>
 
@@ -500,14 +658,23 @@ export default function RoadsideAssistanceWebsite() {
             <div className="rounded-2xl border border-emerald-700/20 bg-white p-5 text-black">
               <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">Paid already?</p>
               <h3 className="mt-2 text-xl font-bold">Send your confirmation</h3>
-              <p className="mt-2 text-sm text-slate-700">After payment, text Coop your name, service, and payment confirmation so your job can be marked paid fast.</p>
-              <a href="sms:+16094503402?body=Hey%20Coop%2C%20I%20just%20paid.%20My%20name%20is%20_____ %20and%20my%20service%20was%20_____" className="mt-4 inline-block rounded-xl bg-slate-950 px-4 py-3 font-semibold text-white">Text Paid Confirmation</a>
+              <p className="mt-2 text-sm text-slate-700">
+                After payment, text Coop your name, service, and payment confirmation so your job can be marked paid fast.
+              </p>
+              <a
+                href="sms:+16094503402?body=Hey%20Coop%2C%20I%20just%20paid.%20My%20name%20is%20_____ %20and%20my%20service%20was%20_____"
+                className="mt-4 inline-block rounded-xl bg-slate-950 px-4 py-3 font-semibold text-white"
+              >
+                Text Paid Confirmation
+              </a>
             </div>
             <div className="rounded-2xl border border-emerald-700/20 bg-white p-5 text-black">
               <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">Checkout Activity</p>
               <h3 className="mt-2 text-xl font-bold">Pay Now clicks this visit</h3>
               <p className="mt-2 text-4xl font-bold">{payClicks}</p>
-              <p className="mt-2 text-sm text-slate-700">This lets you track how often customers tap your payment button while viewing the site.</p>
+              <p className="mt-2 text-sm text-slate-700">
+                This lets you track how often customers tap your payment button while viewing the site.
+              </p>
             </div>
           </div>
         </div>
@@ -520,7 +687,7 @@ export default function RoadsideAssistanceWebsite() {
             <div key={s.title} className="rounded-2xl border border-white/10 bg-slate-900 p-6">
               <h3 className="text-xl font-semibold">{s.title}</h3>
               <p className="mt-2 text-slate-300">{s.desc}</p>
-              <p className="mt-3 font-semibold text-green-400">Pay directly if not covered by motor club</p>
+              <p className="mt-3 font-semibold text-green-400">Out-of-pocket pricing shown above. Fast response available.</p>
             </div>
           ))}
         </div>
@@ -548,8 +715,15 @@ export default function RoadsideAssistanceWebsite() {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
           <span className="text-sm">Need help now?</span>
           <div className="flex gap-3">
-            <a href="sms:+16094503402?body=Hey%20I%20need%20roadside%20assistance%20at%20my%20location" className="rounded-xl bg-blue-500 px-4 py-2 text-sm font-semibold">Call / Text Coop</a>
-            <a href={deviceMapLink} target="_blank" rel="noreferrer" className="rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold">Drop a Pin</a>
+            <a
+              href="sms:+16094503402?body=Hey%20I%20need%20roadside%20assistance%20at%20my%20location"
+              className="rounded-xl bg-blue-500 px-4 py-2 text-sm font-semibold"
+            >
+              Call / Text Coop
+            </a>
+            <a href={deviceMapLink} target="_blank" rel="noreferrer" className="rounded-xl border border-white/20 px-4 py-2 text-sm font-semibold">
+              Drop a Pin
+            </a>
           </div>
         </div>
       </div>
